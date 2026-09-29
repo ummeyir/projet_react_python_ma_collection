@@ -31,6 +31,12 @@ function Catalog() {
 				<nav className="auth-nav" aria-label="Compte utilisateur">
 					{isAuthenticated ? (
 						<>
+							<Link className="auth-nav-link" to="/collection">
+								Ma collection
+							</Link>
+							<Link className="auth-nav-link" to="/stats">
+								Statistiques
+							</Link>
 							<span className="auth-user">{user?.username}</span>
 							<button className="auth-nav-button" type="button" onClick={logout}>
 								Se déconnecter

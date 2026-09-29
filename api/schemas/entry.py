@@ -1,18 +1,25 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import ConfigDict, Field
 from sqlmodel import SQLModel
 
 from schemas.item import ItemRead
 
+EntryStatus = Literal["a_decouvrir", "en_cours", "termine"]
+
 
 class EntryCreate(SQLModel):
 	item_id: int
+	status: EntryStatus = "a_decouvrir"
+	rating: int | None = Field(default=None, ge=1, le=5)
+	comment: str | None = Field(default=None, max_length=2000)
 
 
 class EntryUpdate(SQLModel):
-	is_favorite: bool | None = None
-	notes: str | None = Field(default=None, max_length=2000)
+	status: EntryStatus | None = None
+	rating: int | None = Field(default=None, ge=1, le=5)
+	comment: str | None = Field(default=None, max_length=2000)
 
 
 class EntryRead(SQLModel):
@@ -20,8 +27,9 @@ class EntryRead(SQLModel):
 
 	id: int
 	item_id: int
-	is_favorite: bool
-	notes: str | None
+	status: EntryStatus
+	rating: int | None
+	comment: str | None
 	added_at: datetime
 	item: ItemRead
 

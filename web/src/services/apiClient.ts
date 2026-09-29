@@ -1,11 +1,16 @@
 import type {
 	AuthResponse,
 	AuthUser,
+	CollectionListResponse,
+	CollectionQueryParams,
+	CollectionStats,
+	CreateCollectionEntryRequest,
 	Item,
 	ItemListResponse,
 	LoginRequest,
 	ParametresItems,
 	RegisterRequest,
+	UpdateCollectionEntryRequest,
 } from "../types/api";
 
 const API_BASE_URL = (
@@ -76,6 +81,64 @@ export async function getCurrentUser(
 	signal?: AbortSignal,
 ): Promise<AuthUser> {
 	return requestJson<AuthUser>("/auth/me", {
+		headers: { Authorization: `Bearer ${token}` },
+		signal,
+	});
+}
+
+export async function getCollection(
+	token: string,
+	parameters: CollectionQueryParams = {},
+	signal?: AbortSignal,
+): Promise<CollectionListResponse> {
+	const searchParameters = new URLSearchParams();
+	for (const [key, value] of Object.entries(parameters)) {
+		if (value !== undefined) {
+			searchParameters.set(key, value);
+		}
+	}
+	const query = searchParameters.toString();
+	return requestJson<CollectionListResponse>(
+		`/me/collection${query ? `?${query}` : ""}`,
+		{ headers: { Authorization: `Bearer ${token}` }, signal },
+	);
+}
+
+export async function addCollectionEntry(
+	token: string,
+	payload: CreateCollectionEntryRequest,
+): Promise<void> {
+	await requestJson<unknown>("/me/collection", {
+		method: "POST",
+		headers: { Authorization: `Bearer ${token}` },
+		body: JSON.stringify(payload),
+	});
+}
+
+export async function updateCollectionEntry(
+	token: string,
+	itemId: number,
+	payload: UpdateCollectionEntryRequest,
+): Promise<void> {
+	await requestJson<unknown>(`/me/collection/${itemId}`, {
+		method: "PATCH",
+		headers: { Authorization: `Bearer ${token}` },
+		body: JSON.stringify(payload),
+	});
+}
+
+export async function removeCollectionEntry(token: string, itemId: number): Promise<void> {
+	await requestJson<unknown>(`/me/collection/${itemId}`, {
+		method: "DELETE",
+		headers: { Authorization: `Bearer ${token}` },
+	});
+}
+
+export async function getCollectionStats(
+	token: string,
+	signal?: AbortSignal,
+): Promise<CollectionStats> {
+	return requestJson<CollectionStats>("/me/stats", {
 		headers: { Authorization: `Bearer ${token}` },
 		signal,
 	});

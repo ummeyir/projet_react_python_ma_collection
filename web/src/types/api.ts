@@ -1,6 +1,6 @@
-export type Statut = "a_decouvrir" | "en_cours" | "termine";
+export type CollectionStatus = "a_decouvrir" | "en_cours" | "termine";
 
-export type TriCollection = "date" | "note";
+export type CollectionSort = "date" | "rating";
 
 export interface Item {
 	id: number;
@@ -52,37 +52,43 @@ export interface AuthResponse {
 	user: AuthUser;
 }
 
-export interface EntreeCollection {
+export interface CollectionEntry {
 	id: number;
-	statut: Statut;
-	note: number | null;
-	commentaire: string | null;
-	date_ajout: string;
+	item_id: number;
+	status: CollectionStatus;
+	rating: number | null;
+	comment: string | null;
+	added_at: string;
 	item: Item;
 }
 
-export interface AjouterCollectionRequest {
-	item_id: number;
-	statut: Statut;
-	note?: number;
-	commentaire?: string;
-}
-
-export interface ModifierCollectionRequest {
-	statut?: Statut;
-	note?: number | null;
-	commentaire?: string | null;
-}
-
-export interface ParametresCollection {
-	statut?: Statut;
-	tri?: TriCollection;
-}
-
-export interface StatistiquesCollection {
+export interface CollectionListResponse {
+	items: CollectionEntry[];
 	total: number;
-	par_statut: Record<Statut, number>;
-	note_moyenne: number | null;
+}
+
+export interface CreateCollectionEntryRequest {
+	item_id: number;
+	status: CollectionStatus;
+	rating?: number;
+	comment?: string;
+}
+
+export interface UpdateCollectionEntryRequest {
+	status?: CollectionStatus;
+	rating?: number | null;
+	comment?: string | null;
+}
+
+export interface CollectionQueryParams {
+	status?: CollectionStatus;
+	sort?: CollectionSort;
+}
+
+export interface CollectionStats {
+	total: number;
+	by_status: Record<CollectionStatus, number>;
+	average_rating: number | null;
 }
 
 export interface ErreurApi {
