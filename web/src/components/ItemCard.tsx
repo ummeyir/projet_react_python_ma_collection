@@ -8,24 +8,38 @@ interface ItemCardProps {
 function ItemCard({ item }: ItemCardProps) {
 	return (
 		<article className="item-card">
-			<img
-				className="item-card-image"
-				src={item.image_url}
-				alt={`Illustration de l'exercice ${item.titre}`}
-				loading="lazy"
-			/>
+			{item.image_url ? (
+				<img
+					className="item-card-image"
+					src={item.image_url}
+					alt={`Illustration de l'exercice ${item.name}`}
+					loading="lazy"
+				/>
+			) : (
+				<div
+					className="item-card-image item-card-image-placeholder"
+					role="img"
+					aria-label={`Image indisponible pour ${item.name}`}
+				>
+					<span>{item.category}</span>
+				</div>
+			)}
 			<div className="item-card-content">
-				<p className="item-card-category">{item.categorie}</p>
-				<h3>{item.titre}</h3>
+				<p className="item-card-category">{item.category}</p>
+				<h3>{item.name}</h3>
 				<p className="item-card-description">{item.description}</p>
 				<dl className="item-card-details">
 					<div>
 						<dt>Muscles</dt>
-						<dd>{item.groupe_musculaire}</dd>
+						<dd>{item.muscle_group}</dd>
 					</div>
 					<div>
 						<dt>Matériel</dt>
-						<dd>{item.equipement}</dd>
+						<dd>{item.equipment}</dd>
+					</div>
+					<div>
+						<dt>Difficulté</dt>
+						<dd>{item.difficulty}</dd>
 					</div>
 				</dl>
 				<Link className="item-card-link" to={`/items/${item.id}`}>

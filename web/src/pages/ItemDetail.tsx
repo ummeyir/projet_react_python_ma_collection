@@ -1,9 +1,53 @@
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { exercises } from "../data/exercises";
+import { ApiError, getItem } from "../services/apiClient";
+import type { Item } from "../types/api";
 
 function ItemDetail() {
 	const { itemId } = useParams();
-	const item = exercises.find((exercise) => exercise.id === Number(itemId));
+	const [item, setItem] = useState<Item | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const [retryKey, setRetryKey] = useState(0);
+
+	useEffect(() => {
+		const controller = new AbortController();
+
+		async function loadItem(): Promise<void> {
+			setLoading(true);
+			setError(null);
+			const parsedItemId = Number(itemId);
+
+			if (!Number.isInteger(parsedItemId) || parsedItemId < 1) {
+				setItem(null);
+				setError("L'identifiant de l'exercice est invalide.");
+				setLoading(false);
+				return;
+			}
+
+			try {
+				setItem(await getItem(parsedItemId, controller.signal));
+			} catch (caughtError: unknown) {
+				if (controller.signal.aborted) {
+					return;
+				}
+
+				setItem(null);
+				setError(
+					caughtError instanceof ApiError
+						? caughtError.message
+						: "Impossible de contacter l'API. Vérifiez qu'elle est démarrée.",
+				);
+			} finally {
+				if (!controller.signal.aborted) {
+					setLoading(false);
+				}
+			}
+		}
+
+		void loadItem();
+		return () => controller.abort();
+	}, [itemId, retryKey]);
 
 	return (
 		<main className="app-shell">
@@ -16,31 +60,65 @@ function ItemDetail() {
 				</h1>
 			</header>
 
-			{item ? (
+			{loading ? (
+				<p className="catalog-state" role="status">
+					Chargement de la fiche…
+				</p>
+			) : error ? (
+				<section className="detail-not-found" role="alert">
+					<p className="section-index">FICHE EXERCICE</p>
+					<h2>Fiche indisponible</h2>
+					<p>{error}</p>
+					<button
+						className="detail-retry-button"
+						type="button"
+						onClick={() => setRetryKey((currentKey) => currentKey + 1)}
+					>
+						Réessayer
+					</button>
+					<Link className="detail-action-link" to="/">
+						Retour au catalogue <span aria-hidden="true">→</span>
+					</Link>
+				</section>
+			) : item ? (
 				<article className="exercise-detail">
 					<Link className="detail-back-link" to="/">
 						<span aria-hidden="true">←</span> Retour au catalogue
 					</Link>
 					<div className="exercise-detail-layout">
 						<figure className="exercise-detail-figure">
-							<img
-								src={item.image_url}
-								alt={`Illustration de l'exercice ${item.titre}`}
-							/>
-							<figcaption>{item.categorie}</figcaption>
+							{item.image_url ? (
+								<img
+									src={item.image_url}
+									alt={`Illustration de l'exercice ${item.name}`}
+								/>
+							) : (
+								<div
+									className="exercise-detail-image-placeholder"
+									role="img"
+									aria-label={`Image indisponible pour ${item.name}`}
+								>
+									{item.category}
+								</div>
+							)}
+							<figcaption>{item.category}</figcaption>
 						</figure>
 						<div className="exercise-detail-copy">
-							<p className="item-card-category">{item.categorie}</p>
-							<h2>{item.titre}</h2>
+							<p className="item-card-category">{item.category}</p>
+							<h2>{item.name}</h2>
 							<p className="exercise-detail-description">{item.description}</p>
 							<dl className="exercise-detail-facts">
 								<div>
 									<dt>Groupe musculaire</dt>
-									<dd>{item.groupe_musculaire}</dd>
+									<dd>{item.muscle_group}</dd>
 								</div>
 								<div>
 									<dt>Équipement</dt>
-									<dd>{item.equipement}</dd>
+									<dd>{item.equipment}</dd>
+								</div>
+								<div>
+									<dt>Difficulté</dt>
+									<dd>{item.difficulty}</dd>
 								</div>
 							</dl>
 							<Link className="detail-action-link" to="/">
@@ -49,16 +127,7 @@ function ItemDetail() {
 						</div>
 					</div>
 				</article>
-			) : (
-				<section className="detail-not-found" role="status">
-					<p className="section-index">404 / CATALOGUE</p>
-					<h2>Exercice introuvable</h2>
-					<p>Cette fiche n'existe pas ou n'est plus disponible.</p>
-					<Link className="detail-action-link" to="/">
-						Retour au catalogue <span aria-hidden="true">→</span>
-					</Link>
-				</section>
-			)}
+			) : null}
 		</main>
 	);
 }

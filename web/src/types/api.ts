@@ -4,46 +4,52 @@ export type TriCollection = "date" | "note";
 
 export interface Item {
 	id: number;
-	titre: string;
-	categorie: string;
+	name: string;
+	category: string;
 	description: string;
-	image_url: string;
-	groupe_musculaire: string;
-	equipement: string;
+	image_url: string | null;
+	muscle_group: string;
+	equipment: string;
+	difficulty: string;
 }
 
-export interface ListeItems {
+export interface ItemListResponse {
+	items: Item[];
 	total: number;
 	page: number;
-	limit: number;
-	results: Item[];
+	size: number;
+	categories: string[];
 }
 
 export interface ParametresItems {
 	q?: string;
-	categorie?: string;
+	category?: string;
+	difficulty?: string;
 	page?: number;
-	limit?: number;
+	size?: number;
 }
 
-export interface Utilisateur {
+export interface AuthUser {
 	id: number;
+	username: string;
 	email: string;
 }
 
-export interface InscriptionRequest {
-	email: string;
-	password: string;
-}
-
-export interface ConnexionRequest {
+export interface RegisterRequest {
+	username: string;
 	email: string;
 	password: string;
 }
 
-export interface TokenResponse {
+export interface LoginRequest {
+	email: string;
+	password: string;
+}
+
+export interface AuthResponse {
 	access_token: string;
 	token_type: "bearer";
+	user: AuthUser;
 }
 
 export interface EntreeCollection {
