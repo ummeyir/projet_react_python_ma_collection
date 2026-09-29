@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import CollectionEntryCard from "../components/CollectionEntryCard";
+import CollectionEntryCard from "../components/CollectionEntryCard.tsx";
 import { useCollection } from "../contexts/CollectionContext";
 import type { CollectionStatus } from "../types/api";
 
