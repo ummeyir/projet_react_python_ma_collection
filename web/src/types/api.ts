@@ -29,24 +29,27 @@ export interface ParametresItems {
 	size?: number;
 }
 
-export interface Utilisateur {
+export interface AuthUser {
 	id: number;
+	username: string;
 	email: string;
 }
 
-export interface InscriptionRequest {
-	email: string;
-	password: string;
-}
-
-export interface ConnexionRequest {
+export interface RegisterRequest {
+	username: string;
 	email: string;
 	password: string;
 }
 
-export interface TokenResponse {
+export interface LoginRequest {
+	email: string;
+	password: string;
+}
+
+export interface AuthResponse {
 	access_token: string;
 	token_type: "bearer";
+	user: AuthUser;
 }
 
 export interface EntreeCollection {

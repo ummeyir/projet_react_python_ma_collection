@@ -1,7 +1,11 @@
 import type {
+	AuthResponse,
+	AuthUser,
 	Item,
 	ItemListResponse,
+	LoginRequest,
 	ParametresItems,
+	RegisterRequest,
 } from "../types/api";
 
 const API_BASE_URL = (
@@ -33,10 +37,16 @@ function getApiErrorMessage(payload: unknown, status: number): string {
 	return `La requête a échoué (HTTP ${status}).`;
 }
 
-async function requestJson<T>(path: string, signal?: AbortSignal): Promise<T> {
+async function requestJson<T>(path: string, options: RequestInit = {}): Promise<T> {
+	const headers = new Headers(options.headers);
+	headers.set("Accept", "application/json");
+	if (options.body !== undefined) {
+		headers.set("Content-Type", "application/json");
+	}
+
 	const response = await fetch(`${API_BASE_URL}${path}`, {
-		headers: { Accept: "application/json" },
-		signal,
+		...options,
+		headers,
 	});
 	const payload: unknown = await response.json().catch(() => null);
 
@@ -45,6 +55,30 @@ async function requestJson<T>(path: string, signal?: AbortSignal): Promise<T> {
 	}
 
 	return payload as T;
+}
+
+export async function registerUser(payload: RegisterRequest): Promise<AuthUser> {
+	return requestJson<AuthUser>("/auth/register", {
+		method: "POST",
+		body: JSON.stringify(payload),
+	});
+}
+
+export async function loginUser(payload: LoginRequest): Promise<AuthResponse> {
+	return requestJson<AuthResponse>("/auth/login", {
+		method: "POST",
+		body: JSON.stringify(payload),
+	});
+}
+
+export async function getCurrentUser(
+	token: string,
+	signal?: AbortSignal,
+): Promise<AuthUser> {
+	return requestJson<AuthUser>("/auth/me", {
+		headers: { Authorization: `Bearer ${token}` },
+		signal,
+	});
 }
 
 export async function getItems(
@@ -61,10 +95,10 @@ export async function getItems(
 	const query = searchParameters.toString();
 	return requestJson<ItemListResponse>(
 		`/items${query ? `?${query}` : ""}`,
-		signal,
+		{ signal },
 	);
 }
 
 export async function getItem(itemId: number, signal?: AbortSignal): Promise<Item> {
-	return requestJson<Item>(`/items/${itemId}`, signal);
+	return requestJson<Item>(`/items/${itemId}`, { signal });
 }
