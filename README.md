@@ -62,6 +62,7 @@ Build frontend :
 ```powershell
 cd web
 npm run build
+npm test
 ```
 
 Tests backend, depuis `api/` après installation des dépendances de test :
