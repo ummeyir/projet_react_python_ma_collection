@@ -1,10 +1,21 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "../services/apiClient";
 import { useAuth } from "../contexts/AuthContext";
 
+function getRedirectPath(state: unknown): string {
+	if (typeof state !== "object" || state === null || !("from" in state)) {
+		return "/";
+	}
+	const from = state.from;
+	return typeof from === "string" && from.startsWith("/") && !from.startsWith("//")
+		? from
+		: "/";
+}
+
 function Login() {
 	const { login } = useAuth();
+	const location = useLocation();
 	const navigate = useNavigate();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -18,7 +29,7 @@ function Login() {
 
 		try {
 			await login({ email, password });
-			navigate("/", { replace: true });
+			navigate(getRedirectPath(location.state), { replace: true });
 		} catch (caughtError: unknown) {
 			setError(
 				caughtError instanceof ApiError

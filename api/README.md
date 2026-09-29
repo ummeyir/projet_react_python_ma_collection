@@ -37,10 +37,10 @@ Pour un démarrage local sans PostgreSQL, configurez `DATABASE_URL=sqlite+aiosql
 - `POST /auth/register`: inscription (`username`, `email`, `password`); retourne le profil sans hash.
 - `POST /auth/login`: connexion par email; retourne `access_token`, `token_type` et `user`.
 - `GET /auth/me`: profil de l'utilisateur authentifié.
-- `GET /me/collection`: collection de l'utilisateur authentifié.
-- `POST /me/collection` avec `item_id`: ajout à la collection.
-- `GET /me/collection/{item_id}`, `PATCH /me/collection/{item_id}` (`is_favorite`, `notes`) et `DELETE /me/collection/{item_id}`: gestion d'une entrée appartenant à l'utilisateur.
-- `GET /me/stats`: nombre d'exercices, d'entrées personnelles et de favoris.
+- `GET /me/collection?status=&sort=date|rating`: collection filtrée et triée de l'utilisateur authentifié.
+- `POST /me/collection` avec `item_id`, `status`, `rating` et `comment`: ajout d'un exercice à la collection.
+- `GET /me/collection/{item_id}`, `PATCH /me/collection/{item_id}` et `DELETE /me/collection/{item_id}`: consultation, modification et suppression d'une entrée appartenant à l'utilisateur.
+- `GET /me/stats`: total de la collection, répartition `by_status` et `average_rating`.
 - `GET /health`: vérifie la connexion à la base.
 
 Les routes privées attendent `Authorization: Bearer <access_token>`. Les doublons retournent `409`, les ressources absentes `404`, les entrées invalides `422` et une authentification absente ou invalide `401`. Les erreurs utilisent l'enveloppe `{ "erreur": { "code": ..., "message": ... } }`.

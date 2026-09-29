@@ -1,14 +1,37 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ApiError, getItem } from "../services/apiClient";
+import { ApiError, addCollectionEntry, getItem } from "../services/apiClient";
+import { useAuth } from "../contexts/AuthContext";
 import type { Item } from "../types/api";
 
 function ItemDetail() {
+	const { isAuthenticated, token } = useAuth();
 	const { itemId } = useParams();
 	const [item, setItem] = useState<Item | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [retryKey, setRetryKey] = useState(0);
+	const [addedItemId, setAddedItemId] = useState<number | null>(null);
+	const [actionError, setActionError] = useState<string | null>(null);
+	const [isAdding, setIsAdding] = useState(false);
+
+	async function addToCollection(item: Item): Promise<void> {
+		if (!token) return;
+		setActionError(null);
+		setIsAdding(true);
+		try {
+			await addCollectionEntry(token, { item_id: item.id, status: "a_decouvrir" });
+			setAddedItemId(item.id);
+		} catch (caughtError: unknown) {
+			setActionError(
+				caughtError instanceof ApiError
+					? caughtError.message
+					: "Impossible d'ajouter cet exercice à ta collection.",
+			);
+		} finally {
+			setIsAdding(false);
+		}
+	}
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -121,9 +144,29 @@ function ItemDetail() {
 									<dd>{item.difficulty}</dd>
 								</div>
 							</dl>
-							<Link className="detail-action-link" to="/">
-								Explorer les exercices <span aria-hidden="true">→</span>
-							</Link>
+							{isAuthenticated ? (
+								<button
+									className="detail-action-link detail-add-button"
+									type="button"
+									disabled={isAdding || addedItemId === item.id}
+									onClick={() => addToCollection(item)}
+								>
+									{addedItemId === item.id
+										? "Ajouté à ta collection"
+										: isAdding
+											? "Ajout…"
+											: "Ajouter à ma collection"}
+								</button>
+							) : (
+								<Link
+									className="detail-action-link"
+									to="/login"
+									state={{ from: `/items/${item.id}` }}
+								>
+									Se connecter pour ajouter <span aria-hidden="true">→</span>
+								</Link>
+							)}
+							{actionError && <p className="auth-error" role="alert">{actionError}</p>}
 						</div>
 					</div>
 				</article>
