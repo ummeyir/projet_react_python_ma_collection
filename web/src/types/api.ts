@@ -7,23 +7,45 @@ export interface Item {
 	titre: string;
 	categorie: string;
 	description: string;
-	image_url: string;
+	image_url: string | null;
 	groupe_musculaire: string;
 	equipement: string;
+	difficulty: string;
 }
 
-export interface ListeItems {
+export interface ApiItem {
+	id: number;
+	category: string;
+	name: string;
+	muscle_group: string;
+	equipment: string;
+	difficulty: string;
+	description: string;
+	image_url: string | null;
+}
+
+export interface ApiItemListResponse {
+	items: ApiItem[];
 	total: number;
 	page: number;
-	limit: number;
-	results: Item[];
+	size: number;
+	categories: string[];
+}
+
+export interface ItemListResponse {
+	items: Item[];
+	total: number;
+	page: number;
+	size: number;
+	categories: string[];
 }
 
 export interface ParametresItems {
 	q?: string;
-	categorie?: string;
+	category?: string;
+	difficulty?: string;
 	page?: number;
-	limit?: number;
+	size?: number;
 }
 
 export interface Utilisateur {

@@ -8,12 +8,22 @@ interface ItemCardProps {
 function ItemCard({ item }: ItemCardProps) {
 	return (
 		<article className="item-card">
-			<img
-				className="item-card-image"
-				src={item.image_url}
-				alt={`Illustration de l'exercice ${item.titre}`}
-				loading="lazy"
-			/>
+			{item.image_url ? (
+				<img
+					className="item-card-image"
+					src={item.image_url}
+					alt={`Illustration de l'exercice ${item.titre}`}
+					loading="lazy"
+				/>
+			) : (
+				<div
+					className="item-card-image item-card-image-placeholder"
+					role="img"
+					aria-label={`Image indisponible pour ${item.titre}`}
+				>
+					<span>{item.categorie}</span>
+				</div>
+			)}
 			<div className="item-card-content">
 				<p className="item-card-category">{item.categorie}</p>
 				<h3>{item.titre}</h3>
@@ -26,6 +36,10 @@ function ItemCard({ item }: ItemCardProps) {
 					<div>
 						<dt>Matériel</dt>
 						<dd>{item.equipement}</dd>
+					</div>
+					<div>
+						<dt>Difficulté</dt>
+						<dd>{item.difficulty}</dd>
 					</div>
 				</dl>
 				<Link className="item-card-link" to={`/items/${item.id}`}>
