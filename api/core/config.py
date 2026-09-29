@@ -2,8 +2,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    secret_key: str = "change-me-before-deployment"
-    algorithm: str = "HS256"
+    secret_key: str = "mot_de passe_très_secret"
+    algorithm: str = "123"
     access_token_expire_minutes: int = 60
     database_url: str = "postgresql+asyncpg://collection:collection@localhost:5432/collection"
 
