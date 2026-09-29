@@ -1,3 +1,8 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from models.item import Item
+
+
 EXERCISES = [
     {"id": 1, "category": "Pectoraux", "name": "Développé couché", "muscle_group": "Pectoraux", "equipment": "Barre", "difficulty": "Intermédiaire", "description": "Exercice de base pour la poitrine."},
     {"id": 2, "category": "Pectoraux", "name": "Développé incliné", "muscle_group": "Pectoraux", "equipment": "Barre", "difficulty": "Intermédiaire", "description": "Travaille surtout la partie supérieure de la poitrine."},
@@ -40,3 +45,11 @@ EXERCISES = [
     {"id": 39, "category": "Cardio", "name": "Marches sur tapis", "muscle_group": "Cardio", "equipment": "Tapis", "difficulty": "Débutant", "description": "Excellent pour l’endurance et la récupération."},
     {"id": 40, "category": "Dos", "name": "Remise devant", "muscle_group": "Dos", "equipment": "Barre ou machine", "difficulty": "Intermédiaire", "description": "Développe la partie supérieure du dos et le trapèze."}
 ]
+
+
+async def seed_items(session: AsyncSession) -> None:
+    for exercise in EXERCISES:
+        item_id = exercise["id"]
+        if await session.get(Item, item_id) is None:
+            session.add(Item(**exercise))
+    await session.commit()
