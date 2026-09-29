@@ -8,7 +8,6 @@ export interface Item {
 	categorie: string;
 	description: string;
 	image_url: string;
-	annee: number;
 	groupe_musculaire: string;
 	equipement: string;
 }
