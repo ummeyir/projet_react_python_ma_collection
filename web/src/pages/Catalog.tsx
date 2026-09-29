@@ -1,11 +1,14 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import ItemCard from "../components/ItemCard";
+import { useAuth } from "../contexts/AuthContext";
 import useDebounce from "../hooks/useDebounce";
 import useCatalogItems from "../hooks/useCatalogItems";
 
 const PAGE_SIZE = 12;
 
 function Catalog() {
+	const { isAuthenticated, user, logout } = useAuth();
 	const [search, setSearch] = useState("");
 	const [category, setCategory] = useState("");
 	const [page, setPage] = useState(1);
@@ -21,8 +24,29 @@ function Catalog() {
 	return (
 		<main className="app-shell">
 			<header className="page-header">
-				<p className="eyebrow">ENTRAÎNEMENT · CATALOGUE</p>
-				<h1>Ma Collection</h1>
+				<div className="page-brand">
+					<p className="eyebrow">ENTRAÎNEMENT · CATALOGUE</p>
+					<h1>Ma Collection</h1>
+				</div>
+				<nav className="auth-nav" aria-label="Compte utilisateur">
+					{isAuthenticated ? (
+						<>
+							<span className="auth-user">{user?.username}</span>
+							<button className="auth-nav-button" type="button" onClick={logout}>
+								Se déconnecter
+							</button>
+						</>
+					) : (
+						<>
+							<Link className="auth-nav-link" to="/login">
+								Se connecter
+							</Link>
+							<Link className="auth-nav-link auth-nav-primary" to="/register">
+								Créer un compte
+							</Link>
+						</>
+					)}
+				</nav>
 			</header>
 
 			<section className="catalog" aria-labelledby="catalogue-heading">
