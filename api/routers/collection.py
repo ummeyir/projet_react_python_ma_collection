@@ -2,6 +2,7 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.database import get_session
@@ -69,7 +70,11 @@ async def add_to_collection(
         comment=payload.comment,
     )
     session.add(entry)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        raise HTTPException(status_code=409, detail="Cet exercice est déjà dans votre collection") from None
     await session.refresh(entry)
     return EntryRead(
         id=entry.id,
