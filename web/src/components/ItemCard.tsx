@@ -1,4 +1,5 @@
 import type { Item } from "../types/api";
+import { Link } from "react-router-dom";
 
 interface ItemCardProps {
 	item: Item;
@@ -27,6 +28,10 @@ function ItemCard({ item }: ItemCardProps) {
 						<dd>{item.equipement}</dd>
 					</div>
 				</dl>
+				<Link className="item-card-link" to={`/items/${item.id}`}>
+					Voir la fiche
+					<span aria-hidden="true">→</span>
+				</Link>
 			</div>
 		</article>
 	);
