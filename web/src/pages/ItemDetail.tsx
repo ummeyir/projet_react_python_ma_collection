@@ -90,31 +90,31 @@ function ItemDetail() {
 							{item.image_url ? (
 								<img
 									src={item.image_url}
-									alt={`Illustration de l'exercice ${item.titre}`}
+									alt={`Illustration de l'exercice ${item.name}`}
 								/>
 							) : (
 								<div
 									className="exercise-detail-image-placeholder"
 									role="img"
-									aria-label={`Image indisponible pour ${item.titre}`}
+									aria-label={`Image indisponible pour ${item.name}`}
 								>
-									{item.categorie}
+									{item.category}
 								</div>
 							)}
-							<figcaption>{item.categorie}</figcaption>
+							<figcaption>{item.category}</figcaption>
 						</figure>
 						<div className="exercise-detail-copy">
-							<p className="item-card-category">{item.categorie}</p>
-							<h2>{item.titre}</h2>
+							<p className="item-card-category">{item.category}</p>
+							<h2>{item.name}</h2>
 							<p className="exercise-detail-description">{item.description}</p>
 							<dl className="exercise-detail-facts">
 								<div>
 									<dt>Groupe musculaire</dt>
-									<dd>{item.groupe_musculaire}</dd>
+									<dd>{item.muscle_group}</dd>
 								</div>
 								<div>
 									<dt>Équipement</dt>
-									<dd>{item.equipement}</dd>
+									<dd>{item.equipment}</dd>
 								</div>
 								<div>
 									<dt>Difficulté</dt>

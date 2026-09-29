@@ -12,30 +12,30 @@ function ItemCard({ item }: ItemCardProps) {
 				<img
 					className="item-card-image"
 					src={item.image_url}
-					alt={`Illustration de l'exercice ${item.titre}`}
+					alt={`Illustration de l'exercice ${item.name}`}
 					loading="lazy"
 				/>
 			) : (
 				<div
 					className="item-card-image item-card-image-placeholder"
 					role="img"
-					aria-label={`Image indisponible pour ${item.titre}`}
+					aria-label={`Image indisponible pour ${item.name}`}
 				>
-					<span>{item.categorie}</span>
+					<span>{item.category}</span>
 				</div>
 			)}
 			<div className="item-card-content">
-				<p className="item-card-category">{item.categorie}</p>
-				<h3>{item.titre}</h3>
+				<p className="item-card-category">{item.category}</p>
+				<h3>{item.name}</h3>
 				<p className="item-card-description">{item.description}</p>
 				<dl className="item-card-details">
 					<div>
 						<dt>Muscles</dt>
-						<dd>{item.groupe_musculaire}</dd>
+						<dd>{item.muscle_group}</dd>
 					</div>
 					<div>
 						<dt>Matériel</dt>
-						<dd>{item.equipement}</dd>
+						<dd>{item.equipment}</dd>
 					</div>
 					<div>
 						<dt>Difficulté</dt>

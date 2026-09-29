@@ -1,6 +1,4 @@
 import type {
-	ApiItem,
-	ApiItemListResponse,
 	Item,
 	ItemListResponse,
 	ParametresItems,
@@ -49,19 +47,6 @@ async function requestJson<T>(path: string, signal?: AbortSignal): Promise<T> {
 	return payload as T;
 }
 
-function toItem(apiItem: ApiItem): Item {
-	return {
-		id: apiItem.id,
-		titre: apiItem.name,
-		categorie: apiItem.category,
-		description: apiItem.description,
-		image_url: apiItem.image_url,
-		groupe_musculaire: apiItem.muscle_group,
-		equipement: apiItem.equipment,
-		difficulty: apiItem.difficulty,
-	};
-}
-
 export async function getItems(
 	parameters: ParametresItems,
 	signal?: AbortSignal,
@@ -74,15 +59,12 @@ export async function getItems(
 	}
 
 	const query = searchParameters.toString();
-	const response = await requestJson<ApiItemListResponse>(
+	return requestJson<ItemListResponse>(
 		`/items${query ? `?${query}` : ""}`,
 		signal,
 	);
-
-	return { ...response, items: response.items.map(toItem) };
 }
 
 export async function getItem(itemId: number, signal?: AbortSignal): Promise<Item> {
-	const response = await requestJson<ApiItem>(`/items/${itemId}`, signal);
-	return toItem(response);
+	return requestJson<Item>(`/items/${itemId}`, signal);
 }

@@ -4,32 +4,13 @@ export type TriCollection = "date" | "note";
 
 export interface Item {
 	id: number;
-	titre: string;
-	categorie: string;
+	name: string;
+	category: string;
 	description: string;
 	image_url: string | null;
-	groupe_musculaire: string;
-	equipement: string;
-	difficulty: string;
-}
-
-export interface ApiItem {
-	id: number;
-	category: string;
-	name: string;
 	muscle_group: string;
 	equipment: string;
 	difficulty: string;
-	description: string;
-	image_url: string | null;
-}
-
-export interface ApiItemListResponse {
-	items: ApiItem[];
-	total: number;
-	page: number;
-	size: number;
-	categories: string[];
 }
 
 export interface ItemListResponse {
