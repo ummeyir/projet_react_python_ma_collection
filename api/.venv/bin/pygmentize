@@ -1,0 +1,6 @@
+#!/home/ummey/projet_react_python_ma_collection/api/.venv/bin/python
+import sys
+from pygments.cmdline import main
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(main())
