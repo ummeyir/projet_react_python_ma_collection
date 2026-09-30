@@ -1,10 +1,12 @@
 import asyncio
 import os
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite://"
 os.environ["SECRET_KEY"] = "test-secret-key-not-for-deployment"
 
+import jwt
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.testclient import TestClient
@@ -27,6 +29,7 @@ def test_backend_contract():
         unauthorized = client.get("/me/collection")
         assert unauthorized.status_code == 401
         assert unauthorized.headers["www-authenticate"] == "Bearer"
+        assert unauthorized.json()["erreur"]["code"] == 401
         suffix = uuid4().hex[:8]
         first_user = {
             "username": f"first_{suffix}",
@@ -36,7 +39,9 @@ def test_backend_contract():
         registration = client.post("/auth/register", json=first_user)
         assert registration.status_code == 201
         assert "hashed_password" not in registration.json()
-        assert client.post("/auth/register", json=first_user).status_code == 409
+        duplicate_registration = client.post("/auth/register", json=first_user)
+        assert duplicate_registration.status_code == 409
+        assert duplicate_registration.json()["erreur"]["code"] == 409
 
         login = client.post(
             "/auth/login",
@@ -56,7 +61,9 @@ def test_backend_contract():
         assert add_response.json()["item"]["name"] == "Développé couché"
         assert add_response.json()["status"] == "en_cours"
         assert add_response.json()["rating"] == 4
-        assert client.post("/me/collection", headers=first_headers, json={"item_id": 1}).status_code == 409
+        duplicate_entry = client.post("/me/collection", headers=first_headers, json={"item_id": 1})
+        assert duplicate_entry.status_code == 409
+        assert duplicate_entry.json()["erreur"]["code"] == 409
         updated_entry = client.patch(
             "/me/collection/1",
             headers=first_headers,
@@ -64,12 +71,16 @@ def test_backend_contract():
         ).json()
         assert updated_entry["status"] == "termine"
         assert updated_entry["rating"] == 5
-        assert client.patch("/me/collection/1", headers=first_headers, json={"status": None}).status_code == 422
-        assert client.post(
+        null_status = client.patch("/me/collection/1", headers=first_headers, json={"status": None})
+        assert null_status.status_code == 422
+        assert null_status.json()["erreur"]["code"] == 422
+        invalid_rating = client.post(
             "/me/collection",
             headers=first_headers,
             json={"item_id": 2, "status": "en_cours", "rating": 6},
-        ).status_code == 422
+        )
+        assert invalid_rating.status_code == 422
+        assert invalid_rating.json()["erreur"]["code"] == 422
         filtered_collection = client.get(
             "/me/collection", headers=first_headers, params={"status": "termine", "sort": "rating"}
         ).json()
@@ -86,10 +97,23 @@ def test_backend_contract():
             "/auth/login", json={"email": second_user["email"], "password": second_user["password"]}
         )
         second_headers = {"Authorization": f"Bearer {second_login.json()['access_token']}"}
-        assert client.get("/me/collection/1", headers=second_headers).status_code == 404
-        assert client.patch(
-            "/me/collection/1", headers=second_headers, json={"status": "termine"}
-        ).status_code == 404
+        foreign_entry = client.get("/me/collection/1", headers=second_headers)
+        assert foreign_entry.status_code == 404
+        assert foreign_entry.json()["erreur"] == {
+            "code": 404,
+            "message": "Exercice absent de votre collection",
+        }
+        foreign_update = client.patch(
+            "/me/collection/1",
+            headers=second_headers,
+            json={"status": "en_cours", "rating": 1, "comment": "Modification interdite"},
+        )
+        assert foreign_update.status_code == 404
+        assert foreign_update.json()["erreur"]["code"] == 404
+        unchanged_entry = client.get("/me/collection/1", headers=first_headers).json()
+        assert unchanged_entry["status"] == "termine"
+        assert unchanged_entry["rating"] == 5
+        assert unchanged_entry["comment"] == "Très bien"
         assert client.delete("/me/collection/1", headers=second_headers).status_code == 404
 
         stats = client.get("/me/stats", headers=first_headers).json()
@@ -100,9 +124,32 @@ def test_backend_contract():
         }
         empty_update = client.patch("/me/collection/1", headers=first_headers, json={})
         assert empty_update.status_code == 422
-        assert client.post("/me/collection", headers=first_headers, json={"item_id": 9999}).status_code == 404
-        assert client.get("/me/collection", headers={"Authorization": "Bearer invalid"}).status_code == 401
-        assert client.get("/items", params={"page": 0}).status_code == 422
+        assert empty_update.json()["erreur"]["code"] == 422
+        missing_item = client.post("/me/collection", headers=first_headers, json={"item_id": 9999})
+        assert missing_item.status_code == 404
+        assert missing_item.json()["erreur"]["code"] == 404
+        invalid_token = client.get("/me/collection", headers={"Authorization": "Bearer invalid"})
+        assert invalid_token.status_code == 401
+        assert invalid_token.headers["www-authenticate"] == "Bearer"
+        assert invalid_token.json()["erreur"]["code"] == 401
+
+        expired_token = jwt.encode(
+            {"sub": "1", "exp": datetime.now(timezone.utc) - timedelta(minutes=1)},
+            "test-secret-key-not-for-deployment",
+            algorithm="HS256",
+        )
+        expired_headers = {"Authorization": f"Bearer {expired_token}"}
+        expired_get = client.get("/me/collection", headers=expired_headers)
+        assert expired_get.status_code == 401
+        assert expired_get.json()["erreur"]["code"] == 401
+        expired_patch = client.patch(
+            "/me/collection/1", headers=expired_headers, json={"status": "en_cours"}
+        )
+        assert expired_patch.status_code == 401
+        assert expired_patch.json()["erreur"]["code"] == 401
+        invalid_page = client.get("/items", params={"page": 0})
+        assert invalid_page.status_code == 422
+        assert invalid_page.json()["erreur"]["code"] == 422
         assert client.delete("/me/collection/1", headers=first_headers).status_code == 204
         assert client.get("/me/collection", headers=first_headers).json()["total"] == 0
 
@@ -144,6 +191,9 @@ def test_existing_entry_schema_migrates_safely() -> None:
 
 
 def test_duplicate_collection_race_returns_conflict(monkeypatch):
+    from db.database import async_session_maker
+    from models.entry import Entry
+
     suffix = uuid4().hex[:8]
     user = {
         "username": f"race_{suffix}",
@@ -158,11 +208,49 @@ def test_duplicate_collection_race_returns_conflict(monkeypatch):
         )
         headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
 
-        async def reject_duplicate_commit(_session):
-            raise IntegrityError("INSERT", {}, RuntimeError("unique constraint"))
+        original_commit = AsyncSession.commit
 
-        monkeypatch.setattr(AsyncSession, "commit", reject_duplicate_commit)
+        async def insert_concurrent_duplicate(session):
+            pending_entry = next(entry for entry in session.new if isinstance(entry, Entry))
+            async with async_session_maker() as competing_session:
+                competing_session.add(
+                    Entry(user_id=pending_entry.user_id, item_id=pending_entry.item_id)
+                )
+                await original_commit(competing_session)
+            await original_commit(session)
+
+        monkeypatch.setattr(AsyncSession, "commit", insert_concurrent_duplicate)
         response = client.post("/me/collection", headers=headers, json={"item_id": 1})
+        collection = client.get("/me/collection", headers=headers)
 
     assert response.status_code == 409
     assert response.json()["erreur"]["code"] == 409
+    assert collection.status_code == 200
+    assert collection.json()["total"] == 1
+
+
+def test_seed_items_is_idempotent() -> None:
+    from sqlalchemy import func, select
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+    from sqlmodel import SQLModel
+
+    from models.item import Item
+    from seed import seed_items
+
+    async def verify_seed() -> None:
+        seed_engine = create_async_engine("sqlite+aiosqlite://")
+        async with seed_engine.begin() as connection:
+            await connection.run_sync(SQLModel.metadata.create_all)
+
+        session_factory = async_sessionmaker(seed_engine, class_=AsyncSession, expire_on_commit=False)
+        async with session_factory() as session:
+            await seed_items(session)
+            await seed_items(session)
+            item_count = await session.scalar(select(func.count()).select_from(Item))
+            item_ids = (await session.scalars(select(Item.id).order_by(Item.id))).all()
+
+        assert item_count == 40
+        assert item_ids == list(range(1, 41))
+        await seed_engine.dispose()
+
+    asyncio.run(verify_seed())
