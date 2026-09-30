@@ -1,3 +1,5 @@
+import asyncio
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.item import Item
@@ -53,3 +55,18 @@ async def seed_items(session: AsyncSession) -> None:
         if await session.get(Item, item_id) is None:
             session.add(Item(**exercise))
     await session.commit()
+
+
+async def main() -> None:
+    from db.database import async_session_maker, create_db_and_tables, engine
+
+    try:
+        await create_db_and_tables()
+        async with async_session_maker() as session:
+            await seed_items(session)
+    finally:
+        await engine.dispose()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

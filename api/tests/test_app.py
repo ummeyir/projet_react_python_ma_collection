@@ -314,3 +314,39 @@ def test_seed_items_is_idempotent() -> None:
         await seed_engine.dispose()
 
     asyncio.run(verify_seed())
+
+
+def test_seed_main_initializes_and_closes_database(monkeypatch) -> None:
+    import seed
+    from db import database
+
+    events = []
+    session = object()
+
+    class SessionContext:
+        async def __aenter__(self):
+            events.append("session_open")
+            return session
+
+        async def __aexit__(self, exc_type, exc_value, traceback):
+            events.append("session_close")
+
+    class FakeEngine:
+        async def dispose(self):
+            events.append("engine_dispose")
+
+    async def create_tables():
+        events.append("create_tables")
+
+    async def run_seed(session_arg):
+        assert session_arg is session
+        events.append("seed")
+
+    monkeypatch.setattr(database, "async_session_maker", SessionContext)
+    monkeypatch.setattr(database, "create_db_and_tables", create_tables)
+    monkeypatch.setattr(database, "engine", FakeEngine())
+    monkeypatch.setattr(seed, "seed_items", run_seed)
+
+    asyncio.run(seed.main())
+
+    assert events == ["create_tables", "session_open", "seed", "session_close", "engine_dispose"]
