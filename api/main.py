@@ -6,6 +6,7 @@ from sqlalchemy import text
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from core.exceptions import custom_http_exception_handler, validation_exception_handler
+from core.config import settings
 from db.database import async_session_maker, create_db_and_tables, engine
 from routers.auth import router as auth_router
 from routers.collection import router as collection_router
@@ -27,7 +28,7 @@ app = FastAPI(title="Ma Collection API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

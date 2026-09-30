@@ -22,15 +22,20 @@ import type {
 } from "../types/api";
 import { useAuth } from "./AuthContext";
 
+const PAGE_SIZE = 12;
+
 interface CollectionContextValue {
 	entries: CollectionEntry[];
 	total: number;
+	page: number;
+	pageCount: number;
 	statusFilter: CollectionStatus | "";
 	sort: CollectionSort;
 	loading: boolean;
 	error: string | null;
 	setStatusFilter: (status: CollectionStatus | "") => void;
 	setSort: (sort: CollectionSort) => void;
+	setPage: (page: number) => void;
 	refresh: () => void;
 	addEntry: (payload: CreateCollectionEntryRequest) => Promise<void>;
 	updateEntry: (itemId: number, payload: UpdateCollectionEntryRequest) => Promise<void>;
@@ -43,6 +48,7 @@ function CollectionProvider({ children }: PropsWithChildren) {
 	const { token, isLoading: authLoading } = useAuth();
 	const [entries, setEntries] = useState<CollectionEntry[]>([]);
 	const [total, setTotal] = useState(0);
+	const [page, setPage] = useState(1);
 	const [statusFilter, setStatusFilterState] = useState<CollectionStatus | "">("");
 	const [sort, setSortState] = useState<CollectionSort>("date");
 	const [loading, setLoading] = useState(true);
@@ -67,6 +73,8 @@ function CollectionProvider({ children }: PropsWithChildren) {
 		const parameters: CollectionQueryParams = {
 			status: statusFilter || undefined,
 			sort,
+			page,
+			size: PAGE_SIZE,
 		};
 
 		async function loadCollection(): Promise<void> {
@@ -76,6 +84,10 @@ function CollectionProvider({ children }: PropsWithChildren) {
 				const response = await getCollection(accessToken, parameters, controller.signal);
 				setEntries(response.items);
 				setTotal(response.total);
+				const lastPage = Math.max(1, Math.ceil(response.total / PAGE_SIZE));
+				if (page > lastPage) {
+					setPage(lastPage);
+				}
 			} catch (caughtError: unknown) {
 				if (controller.signal.aborted) {
 					return;
@@ -96,7 +108,17 @@ function CollectionProvider({ children }: PropsWithChildren) {
 
 		void loadCollection();
 		return () => controller.abort();
-	}, [token, authLoading, statusFilter, sort, reloadKey]);
+	}, [token, authLoading, statusFilter, sort, page, reloadKey]);
+
+	function changeStatusFilter(status: CollectionStatus | ""): void {
+		setStatusFilterState(status);
+		setPage(1);
+	}
+
+	function changeSort(nextSort: CollectionSort): void {
+		setSortState(nextSort);
+		setPage(1);
+	}
 
 	function refresh(): void {
 		setReloadKey((currentKey) => currentKey + 1);
@@ -107,6 +129,7 @@ function CollectionProvider({ children }: PropsWithChildren) {
 			throw new ApiError("Connecte-toi pour modifier ta collection.", 401);
 		}
 		await addCollectionEntry(token, payload);
+		setPage(1);
 		refresh();
 	}
 
@@ -126,6 +149,10 @@ function CollectionProvider({ children }: PropsWithChildren) {
 			throw new ApiError("Connecte-toi pour modifier ta collection.", 401);
 		}
 		await removeCollectionEntry(token, itemId);
+		if (entries.length === 1 && page > 1) {
+			setPage((currentPage) => currentPage - 1);
+			return;
+		}
 		refresh();
 	}
 
@@ -134,12 +161,15 @@ function CollectionProvider({ children }: PropsWithChildren) {
 			value={{
 				entries,
 				total,
+				page,
+				pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),
 				statusFilter,
 				sort,
 				loading,
 				error,
-				setStatusFilter: setStatusFilterState,
-				setSort: setSortState,
+				setStatusFilter: changeStatusFilter,
+				setSort: changeSort,
+				setPage,
 				refresh,
 				addEntry,
 				updateEntry,

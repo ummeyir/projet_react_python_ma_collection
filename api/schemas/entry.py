@@ -37,3 +37,5 @@ class EntryRead(SQLModel):
 class EntryList(SQLModel):
 	items: list[EntryRead]
 	total: int
+	page: int
+	size: int

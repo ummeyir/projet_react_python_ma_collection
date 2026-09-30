@@ -16,8 +16,7 @@ from schemas.item import ItemRead
 router = APIRouter(prefix="/me/collection", tags=["collection"])
 
 
-async def _entry_response(session: AsyncSession, entry: Entry) -> EntryRead:
-    item = await session.get(Item, entry.item_id)
+def _entry_response(entry: Entry, item: Item) -> EntryRead:
     return EntryRead(
         id=entry.id,
         item_id=entry.item_id,
@@ -35,17 +34,30 @@ async def get_collection(
     session: Annotated[AsyncSession, Depends(get_session)],
     status_filter: Annotated[EntryStatus | None, Query(alias="status")] = None,
     sort: Literal["date", "rating"] = "date",
+    page: int = Query(default=1, ge=1),
+    size: int = Query(default=50, ge=1, le=100),
 ):
-    statement = select(Entry).where(Entry.user_id == current_user.id)
+    filters = [Entry.user_id == current_user.id]
     if status_filter is not None:
-        statement = statement.where(Entry.status == status_filter)
+        filters.append(Entry.status == status_filter)
+    total = (
+        await session.execute(select(func.count()).select_from(Entry).where(*filters))
+    ).scalar_one()
+    statement = select(Entry, Item).join(Item, Entry.item_id == Item.id).where(*filters)
     if sort == "rating":
-        statement = statement.order_by(Entry.rating.desc().nulls_last(), Entry.added_at.desc())
+        statement = statement.order_by(
+            Entry.rating.desc().nulls_last(), Entry.added_at.desc(), Entry.id.desc()
+        )
     else:
-        statement = statement.order_by(Entry.added_at.desc())
-    result = await session.execute(statement)
-    entries = result.scalars().all()
-    return EntryList(items=[await _entry_response(session, entry) for entry in entries], total=len(entries))
+        statement = statement.order_by(Entry.added_at.desc(), Entry.id.desc())
+    result = await session.execute(statement.offset((page - 1) * size).limit(size))
+    entries = result.all()
+    return EntryList(
+        items=[_entry_response(entry, item) for entry, item in entries],
+        total=total,
+        page=page,
+        size=size,
+    )
 
 
 @router.post("", response_model=EntryRead, status_code=status.HTTP_201_CREATED)
@@ -99,7 +111,8 @@ async def get_collection_item(
     entry = result.scalar_one_or_none()
     if entry is None:
         raise HTTPException(status_code=404, detail="Exercice absent de votre collection")
-    return await _entry_response(session, entry)
+    item = await session.get(Item, entry.item_id)
+    return _entry_response(entry, item)
 
 
 @router.patch("/{item_id}", response_model=EntryRead)
@@ -124,7 +137,8 @@ async def update_collection_item(
         setattr(entry, field, value)
     await session.commit()
     await session.refresh(entry)
-    return await _entry_response(session, entry)
+    item = await session.get(Item, entry.item_id)
+    return _entry_response(entry, item)
 
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)

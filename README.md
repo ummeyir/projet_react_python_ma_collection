@@ -8,7 +8,7 @@ Application web en français pour parcourir des exercices de musculation et gér
 
 - Catalogue d'exercices avec recherche, filtre par catégorie, pagination et fiche détaillée.
 - Inscription, connexion et déconnexion avec authentification JWT.
-- Collection privée avec statut, note de 1 à 5 et commentaire facultatif.
+- Collection privée paginée avec statut, note de 1 à 5 et commentaire facultatif.
 - Filtre et tri des entrées, modification et suppression.
 - Statistiques personnelles avec répartition par statut et note moyenne.
 
@@ -25,7 +25,7 @@ Application web en français pour parcourir des exercices de musculation et gér
 
 ## Lancement
 
-Depuis la racine du dépôt, démarre PostgreSQL et l'API :
+Depuis la racine du dépôt, crée `.env` à partir de `.env.example`, remplace les valeurs de mot de passe et génère une clé avec `python3 -c "import secrets; print(secrets.token_hex(32))"`. Puis démarre PostgreSQL et l'API :
 
 ```powershell
 docker compose up --build -d
@@ -51,7 +51,7 @@ Le volume `postgres_data` conserve la base. `docker compose down -v` supprime ce
 
 ## Configuration
 
-Compose fournit des valeurs par défaut adaptées au développement local. Pour les remplacer, crée un fichier `.env` à la racine avec `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `SECRET_KEY` et éventuellement `ACCESS_TOKEN_EXPIRE_MINUTES`. Ne versionne jamais ce fichier ni un secret de production.
+Compose lit `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `SECRET_KEY`, `ACCESS_TOKEN_EXPIRE_MINUTES` et `CORS_ORIGINS` depuis `.env` à la racine. Le mot de passe PostgreSQL et la clé secrète sont obligatoires ; ne versionne jamais `.env` ni un secret de production. `CORS_ORIGINS` est une liste d'origines séparées par des virgules.
 
 Le frontend utilise `http://localhost:8000` par défaut. Pour changer cette adresse, définis `VITE_API_BASE_URL` dans `web/.env.local`.
 

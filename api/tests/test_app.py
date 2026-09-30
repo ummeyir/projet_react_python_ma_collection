@@ -7,17 +7,37 @@ os.environ["DATABASE_URL"] = "sqlite+aiosqlite://"
 os.environ["SECRET_KEY"] = "test-secret-key-not-for-deployment"
 
 import jwt
+import pytest
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.testclient import TestClient
 
+from core.config import Settings
 from main import app
+
+
+def test_settings_require_explicit_database_and_strong_secret(monkeypatch):
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.delenv("SECRET_KEY", raising=False)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, database_url="sqlite+aiosqlite://", secret_key="x" * 31)
 
 
 def test_backend_contract():
     with TestClient(app) as client:
         assert client.get("/").json()["message"] == "Ma Collection API"
         assert client.get("/health").json()["status"] == "ok"
+        cors_preflight = client.options(
+            "/items",
+            headers={
+                "Origin": "http://localhost:5173",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
+        assert cors_preflight.headers["access-control-allow-origin"] == "http://localhost:5173"
 
         catalog = client.get("/items", params={"page": 1, "size": 100}).json()
         assert catalog["total"] == 40
@@ -86,6 +106,18 @@ def test_backend_contract():
         ).json()
         assert filtered_collection["total"] == 1
         assert filtered_collection["items"][0]["item_id"] == 1
+        first_collection_page = client.get(
+            "/me/collection", headers=first_headers, params={"page": 1, "size": 1}
+        ).json()
+        assert first_collection_page["page"] == 1
+        assert first_collection_page["size"] == 1
+        assert first_collection_page["total"] == 1
+        assert len(first_collection_page["items"]) == 1
+        second_collection_page = client.get(
+            "/me/collection", headers=first_headers, params={"page": 2, "size": 1}
+        ).json()
+        assert second_collection_page["total"] == 1
+        assert second_collection_page["items"] == []
 
         second_user = {
             "username": f"second_{suffix}",

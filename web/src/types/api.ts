@@ -65,6 +65,8 @@ export interface CollectionEntry {
 export interface CollectionListResponse {
 	items: CollectionEntry[];
 	total: number;
+	page: number;
+	size: number;
 }
 
 export interface CreateCollectionEntryRequest {
@@ -83,6 +85,8 @@ export interface UpdateCollectionEntryRequest {
 export interface CollectionQueryParams {
 	status?: CollectionStatus;
 	sort?: CollectionSort;
+	page?: number;
+	size?: number;
 }
 
 export interface CollectionStats {

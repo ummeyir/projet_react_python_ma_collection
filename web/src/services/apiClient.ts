@@ -94,7 +94,7 @@ export async function getCollection(
 	const searchParameters = new URLSearchParams();
 	for (const [key, value] of Object.entries(parameters)) {
 		if (value !== undefined) {
-			searchParameters.set(key, value);
+			searchParameters.set(key, String(value));
 		}
 	}
 	const query = searchParameters.toString();

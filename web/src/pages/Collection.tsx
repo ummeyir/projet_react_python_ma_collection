@@ -10,7 +10,20 @@ const statusOptions: { value: CollectionStatus; label: string }[] = [
 ];
 
 function Collection() {
-	const { entries, total, statusFilter, sort, setStatusFilter, setSort, loading, error, refresh } = useCollection();
+	const {
+		entries,
+		total,
+		page,
+		pageCount,
+		statusFilter,
+		sort,
+		setStatusFilter,
+		setSort,
+		setPage,
+		loading,
+		error,
+		refresh,
+	} = useCollection();
 
 	return (
 		<main className="app-shell private-page">
@@ -73,6 +86,18 @@ function Collection() {
 						<p>Ajoute un exercice depuis le catalogue pour commencer ton suivi.</p>
 						<Link className="auth-submit auth-submit-link" to="/">Parcourir les exercices</Link>
 					</div>
+				)}
+
+				{!loading && !error && pageCount > 1 && (
+					<nav className="catalog-pagination" aria-label="Pagination de la collection">
+						<button type="button" disabled={page === 1} onClick={() => setPage(page - 1)}>
+							Précédent
+						</button>
+						<span>Page {page} sur {pageCount}</span>
+						<button type="button" disabled={page === pageCount} onClick={() => setPage(page + 1)}>
+							Suivant
+						</button>
+					</nav>
 				)}
 			</section>
 		</main>
