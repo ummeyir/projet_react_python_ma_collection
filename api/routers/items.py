@@ -5,46 +5,54 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.database import get_session
+from dependencies.pagination import Pagination, get_pagination
 from models.item import Item
 from schemas.item import ItemList, ItemRead
 
 router = APIRouter(prefix="/items", tags=["items"])
 
 
-@router.get("", response_model=ItemList)
+@router.get(
+    "",
+    response_model=ItemList,
+    summary="Lister et rechercher les exercices",
+)
 async def list_items(
     session: Annotated[AsyncSession, Depends(get_session)],
-    q: str | None = Query(default=None, max_length=120),
-    category: str | None = Query(default=None, max_length=80),
-    difficulty: str | None = Query(default=None, max_length=40),
-    page: int = Query(default=1, ge=1),
-    size: int = Query(default=12, ge=1, le=100),
-):
+    pagination: Annotated[Pagination, Depends(get_pagination)],
+    q: str | None = Query(default=None, min_length=1, max_length=120),
+    categorie: str | None = Query(default=None, max_length=80),
+) -> ItemList:
     filters = []
     if q:
         pattern = f"%{q.strip()}%"
         filters.append(or_(Item.name.ilike(pattern), Item.description.ilike(pattern), Item.muscle_group.ilike(pattern)))
-    if category:
-        filters.append(Item.category == category)
-    if difficulty:
-        filters.append(Item.difficulty == difficulty)
+    if categorie:
+        filters.append(Item.category == categorie)
 
     total = (await session.execute(select(func.count()).select_from(Item).where(*filters))).scalar_one()
     rows = await session.execute(
-        select(Item).where(*filters).order_by(Item.category, Item.name).offset((page - 1) * size).limit(size)
+        select(Item)
+        .where(*filters)
+        .order_by(Item.category, Item.name)
+        .offset((pagination.page - 1) * pagination.limit)
+        .limit(pagination.limit)
     )
-    categories = await session.execute(select(Item.category).distinct().order_by(Item.category))
     return ItemList(
-        items=rows.scalars().all(),
+        results=rows.scalars().all(),
         total=total,
-        page=page,
-        size=size,
-        categories=categories.scalars().all(),
+        page=pagination.page,
+        limit=pagination.limit,
     )
 
 
-@router.get("/{item_id}", response_model=ItemRead)
-async def get_item(item_id: int, session: Annotated[AsyncSession, Depends(get_session)]):
+@router.get(
+    "/{item_id}",
+    response_model=ItemRead,
+    summary="Lire une fiche exercice",
+    responses={404: {"description": "Exercice introuvable"}},
+)
+async def get_item(item_id: int, session: Annotated[AsyncSession, Depends(get_session)]) -> ItemRead:
     item = await session.get(Item, item_id)
     if item is None:
         raise HTTPException(status_code=404, detail=f"Exercice {item_id} introuvable")

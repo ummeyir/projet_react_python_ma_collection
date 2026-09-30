@@ -29,6 +29,15 @@ def _migrate_entry_columns(connection: Connection) -> None:
     connection.execute(text("CREATE INDEX IF NOT EXISTS ix_entry_status ON entry (status)"))
 
 
+def _migrate_item_columns(connection: Connection) -> None:
+    if not inspect(connection).has_table("item"):
+        return
+
+    column_names = {column["name"] for column in inspect(connection).get_columns("item")}
+    if "year" not in column_names:
+        connection.execute(text("ALTER TABLE item ADD COLUMN year INTEGER"))
+
+
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         yield session
@@ -41,3 +50,4 @@ async def create_db_and_tables() -> None:
     async with engine.begin() as connection:
         await connection.run_sync(SQLModel.metadata.create_all)
         await connection.run_sync(_migrate_entry_columns)
+        await connection.run_sync(_migrate_item_columns)

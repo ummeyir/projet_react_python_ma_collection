@@ -14,11 +14,16 @@ from schemas.stats import CollectionStats
 router = APIRouter(prefix="/me/stats", tags=["stats"])
 
 
-@router.get("", response_model=CollectionStats)
+@router.get(
+    "",
+    response_model=CollectionStats,
+    summary="Consulter les statistiques personnelles",
+    responses={401: {"description": "Authentification requise"}},
+)
 async def get_stats(
     current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
-):
+) -> CollectionStats:
     total_collection = (
         await session.execute(select(func.count()).select_from(Entry).where(Entry.user_id == current_user.id))
     ).scalar_one()
@@ -41,6 +46,6 @@ async def get_stats(
     ).scalar_one()
     return CollectionStats(
         total=total_collection,
-        by_status=status_counts,
-        average_rating=float(average_rating) if average_rating is not None else None,
+        par_statut=status_counts,
+        note_moyenne=float(average_rating) if average_rating is not None else None,
     )

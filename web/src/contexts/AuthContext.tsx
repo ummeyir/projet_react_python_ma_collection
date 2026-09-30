@@ -60,8 +60,9 @@ function AuthProvider({ children }: PropsWithChildren) {
 
 	async function login(payload: LoginRequest): Promise<void> {
 		const response = await loginUser(payload);
+		const currentUser = await getCurrentUser(response.access_token);
 		setToken(response.access_token);
-		setUser(response.user);
+		setUser(currentUser);
 	}
 
 	async function register(payload: RegisterRequest): Promise<AuthUser> {

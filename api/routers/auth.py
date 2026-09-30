@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,34 +14,43 @@ from schemas.user import LoginRequest, TokenRead, UserCreate, UserRead
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=UserRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Créer un compte",
+    responses={409: {"description": "Adresse e-mail déjà utilisée"}},
+)
 async def register_user(
     payload: UserCreate,
     session: Annotated[AsyncSession, Depends(get_session)],
-):
+) -> UserRead:
     email = str(payload.email).lower()
-    existing = await session.execute(
-        select(User).where(or_(User.username == payload.username, User.email == email))
-    )
+    existing = await session.execute(select(User).where(User.email == email))
     if existing.scalar_one_or_none() is not None:
-        raise HTTPException(status_code=409, detail="Nom d'utilisateur ou adresse e-mail déjà utilisé")
+        raise HTTPException(status_code=409, detail="Cette adresse e-mail est déjà utilisée")
 
-    user = User(username=payload.username, email=email, hashed_password=hash_password(payload.password))
+    user = User(email=email, hashed_password=hash_password(payload.password))
     session.add(user)
     try:
         await session.commit()
     except IntegrityError:
         await session.rollback()
-        raise HTTPException(status_code=409, detail="Nom d'utilisateur ou adresse e-mail déjà utilisé") from None
+        raise HTTPException(status_code=409, detail="Cette adresse e-mail est déjà utilisée") from None
     await session.refresh(user)
     return user
 
 
-@router.post("/login", response_model=TokenRead)
+@router.post(
+    "/login",
+    response_model=TokenRead,
+    summary="Se connecter",
+    responses={401: {"description": "Identifiants invalides"}},
+)
 async def login_user(
     payload: LoginRequest,
     session: Annotated[AsyncSession, Depends(get_session)],
-):
+) -> TokenRead:
     result = await session.execute(select(User).where(User.email == str(payload.email).lower()))
     user = result.scalar_one_or_none()
     if user is None or not verify_password(payload.password, user.hashed_password):
@@ -50,9 +59,14 @@ async def login_user(
             detail="Adresse e-mail ou mot de passe incorrect",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return TokenRead(access_token=create_access_token(str(user.id)), user=user)
+    return TokenRead(access_token=create_access_token(str(user.id)))
 
 
-@router.get("/me", response_model=UserRead)
-async def read_current_user(current_user: Annotated[User, Depends(get_current_user)]):
+@router.get(
+    "/me",
+    response_model=UserRead,
+    summary="Lire le compte courant",
+    responses={401: {"description": "Authentification requise"}},
+)
+async def read_current_user(current_user: Annotated[User, Depends(get_current_user)]) -> UserRead:
     return current_user

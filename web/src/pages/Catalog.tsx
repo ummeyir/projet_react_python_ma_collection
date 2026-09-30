@@ -37,7 +37,7 @@ function Catalog() {
 							<Link className="auth-nav-link" to="/stats">
 								Statistiques
 							</Link>
-							<span className="auth-user">{user?.username}</span>
+							<span className="auth-user">{user?.email}</span>
 							<button className="auth-nav-button" type="button" onClick={logout}>
 								Se déconnecter
 							</button>

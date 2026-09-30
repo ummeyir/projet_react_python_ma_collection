@@ -51,7 +51,7 @@ describe("ProtectedRoute", () => {
 	it("restores a valid saved session before showing the private page", async () => {
 		localStorage.setItem("ma-collection-token", JSON.stringify("saved-token"));
 		fetchMock.mockResolvedValue(
-			jsonResponse({ id: 2, username: "demo", email: "demo@example.com" }),
+			jsonResponse({ id: 2, email: "demo@example.com" }),
 		);
 
 		renderProtectedRoute();

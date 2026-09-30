@@ -2,6 +2,52 @@ export type CollectionStatus = "a_decouvrir" | "en_cours" | "termine";
 
 export type CollectionSort = "date" | "rating";
 
+export type ApiCollectionSort = "date" | "note";
+
+export interface ApiItem {
+	id: number;
+	titre: string;
+	categorie: string;
+	description: string;
+	image_url: string | null;
+	annee: number | null;
+	groupe_musculaire: string;
+	equipement: string;
+	difficulte: string;
+}
+
+export interface ApiItemList {
+	total: number;
+	page: number;
+	limit: number;
+	results: ApiItem[];
+}
+
+export interface ApiEntry {
+	id: number;
+	statut: CollectionStatus;
+	note: number | null;
+	commentaire: string | null;
+	date_ajout: string;
+	item: ApiItem;
+}
+
+export interface ApiStats {
+	total: number;
+	par_statut: Record<CollectionStatus, number>;
+	note_moyenne: number | null;
+}
+
+export interface ApiUser {
+	id: number;
+	email: string;
+}
+
+export interface ApiToken {
+	access_token: string;
+	token_type: "bearer";
+}
+
 export interface Item {
 	id: number;
 	name: string;
@@ -31,12 +77,10 @@ export interface ParametresItems {
 
 export interface AuthUser {
 	id: number;
-	username: string;
 	email: string;
 }
 
 export interface RegisterRequest {
-	username: string;
 	email: string;
 	password: string;
 }
@@ -49,7 +93,6 @@ export interface LoginRequest {
 export interface AuthResponse {
 	access_token: string;
 	token_type: "bearer";
-	user: AuthUser;
 }
 
 export interface CollectionEntry {

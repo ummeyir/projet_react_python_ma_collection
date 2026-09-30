@@ -11,31 +11,23 @@ EntryStatus = Literal["a_decouvrir", "en_cours", "termine"]
 
 class EntryCreate(SQLModel):
 	item_id: int
-	status: EntryStatus = "a_decouvrir"
-	rating: int | None = Field(default=None, ge=1, le=5)
-	comment: str | None = Field(default=None, max_length=2000)
+	statut: EntryStatus = "a_decouvrir"
+	note: int | None = Field(default=None, ge=1, le=5)
+	commentaire: str | None = Field(default=None, max_length=2000)
 
 
 class EntryUpdate(SQLModel):
-	status: EntryStatus | None = None
-	rating: int | None = Field(default=None, ge=1, le=5)
-	comment: str | None = Field(default=None, max_length=2000)
+	statut: EntryStatus | None = None
+	note: int | None = Field(default=None, ge=1, le=5)
+	commentaire: str | None = Field(default=None, max_length=2000)
 
 
 class EntryRead(SQLModel):
-	model_config = ConfigDict(from_attributes=True)
+	model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 	id: int
-	item_id: int
-	status: EntryStatus
-	rating: int | None
-	comment: str | None
-	added_at: datetime
+	statut: EntryStatus = Field(validation_alias="status")
+	note: int | None = Field(validation_alias="rating")
+	commentaire: str | None = Field(validation_alias="comment")
+	date_ajout: datetime = Field(validation_alias="added_at")
 	item: ItemRead
-
-
-class EntryList(SQLModel):
-	items: list[EntryRead]
-	total: int
-	page: int
-	size: int

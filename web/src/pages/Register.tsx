@@ -5,7 +5,6 @@ import { useAuth } from "../contexts/AuthContext";
 
 function Register() {
 	const { register } = useAuth();
-	const [username, setUsername] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
@@ -18,7 +17,7 @@ function Register() {
 		setIsSubmitting(true);
 
 		try {
-			await register({ username, email, password });
+			await register({ email, password });
 			setIsRegistered(true);
 		} catch (caughtError: unknown) {
 			setError(
@@ -56,19 +55,6 @@ function Register() {
 					<>
 						<p className="auth-intro">Crée ton compte pour commencer ta collection.</p>
 						<form className="auth-form" onSubmit={handleSubmit}>
-							<label className="auth-field" htmlFor="register-username">
-								<span>Nom d'utilisateur</span>
-								<input
-									id="register-username"
-									autoComplete="username"
-									minLength={3}
-									maxLength={50}
-									pattern="[A-Za-z0-9_.-]+"
-									value={username}
-									onChange={(event) => setUsername(event.target.value)}
-									required
-								/>
-							</label>
 							<label className="auth-field" htmlFor="register-email">
 								<span>Adresse e-mail</span>
 								<input

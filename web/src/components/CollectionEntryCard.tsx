@@ -33,7 +33,7 @@ function CollectionEntryCard({ entry }: CollectionEntryCardProps) {
 		setError(null);
 		setIsSaving(true);
 		try {
-			await updateEntry(entry.item_id, {
+			await updateEntry(entry.id, {
 				status,
 				rating: rating === "" ? null : Number(rating),
 				comment: comment.trim() || null,
@@ -53,7 +53,7 @@ function CollectionEntryCard({ entry }: CollectionEntryCardProps) {
 		setError(null);
 		setIsRemoving(true);
 		try {
-			await removeEntry(entry.item_id);
+			await removeEntry(entry.id);
 		} catch (caughtError: unknown) {
 			setError(
 				caughtError instanceof ApiError
