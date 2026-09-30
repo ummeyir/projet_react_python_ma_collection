@@ -120,7 +120,11 @@ async def get_collection_item(
     "/{entry_id}",
     response_model=EntryRead,
     summary="Modifier une entrée de collection",
-    responses={401: {"description": "Authentification requise"}, 404: {"description": "Entrée introuvable"}},
+    responses={
+        400: {"description": "Modification invalide"},
+        401: {"description": "Authentification requise"},
+        404: {"description": "Entrée introuvable"},
+    },
 )
 async def update_collection_item(
     entry_id: int,
@@ -136,9 +140,9 @@ async def update_collection_item(
         raise HTTPException(status_code=404, detail="Exercice absent de votre collection")
     changes = payload.model_dump(exclude_unset=True)
     if not changes:
-        raise HTTPException(status_code=422, detail="Aucune modification fournie")
+        raise HTTPException(status_code=400, detail="Aucune modification fournie")
     if "statut" in changes and changes["statut"] is None:
-        raise HTTPException(status_code=422, detail="statut ne peut pas être null")
+        raise HTTPException(status_code=400, detail="statut ne peut pas être null")
     field_names = {"statut": "status", "note": "rating", "commentaire": "comment"}
     for field, value in changes.items():
         setattr(entry, field_names[field], value)

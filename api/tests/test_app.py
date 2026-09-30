@@ -121,8 +121,8 @@ def test_backend_contract():
         null_status = client.patch(
             f"/me/collection/{entry_id}", headers=first_headers, json={"statut": None}
         )
-        assert null_status.status_code == 422
-        assert null_status.json()["erreur"]["code"] == 422
+        assert null_status.status_code == 400
+        assert null_status.json()["erreur"]["code"] == 400
         invalid_rating = client.post(
             "/me/collection",
             headers=first_headers,
@@ -174,8 +174,12 @@ def test_backend_contract():
             "note_moyenne": 5.0,
         }
         empty_update = client.patch(f"/me/collection/{entry_id}", headers=first_headers, json={})
-        assert empty_update.status_code == 422
-        assert empty_update.json()["erreur"]["code"] == 422
+        assert empty_update.status_code == 400
+        assert empty_update.json()["erreur"]["code"] == 400
+        openapi = client.get("/openapi.json").json()
+        patch_docs = openapi["paths"]["/me/collection/{entry_id}"]["patch"]
+        assert "400" in patch_docs["responses"]
+        assert patch_docs["summary"] == "Modifier une entrée de collection"
         missing_item = client.post("/me/collection", headers=first_headers, json={"item_id": 9999})
         assert missing_item.status_code == 404
         assert missing_item.json()["erreur"]["code"] == 404
