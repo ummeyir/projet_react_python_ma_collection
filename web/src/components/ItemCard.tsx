@@ -7,7 +7,11 @@ interface ItemCardProps {
 
 function ItemCard({ item }: ItemCardProps) {
 	return (
-		<article className="item-card">
+		<Link
+			className="item-card"
+			to={`/items/${item.id}`}
+			aria-label={`Voir la fiche de ${item.name}`}
+		>
 			{item.image_url ? (
 				<img
 					className="item-card-image"
@@ -42,12 +46,12 @@ function ItemCard({ item }: ItemCardProps) {
 						<dd>{item.difficulty}</dd>
 					</div>
 				</dl>
-				<Link className="item-card-link" to={`/items/${item.id}`}>
+				<div className="item-card-link">
 					Voir la fiche
 					<span aria-hidden="true">→</span>
-				</Link>
+				</div>
 			</div>
-		</article>
+		</Link>
 	);
 }
 
