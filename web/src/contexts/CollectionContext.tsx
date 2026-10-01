@@ -17,7 +17,7 @@ import type {
 	CreateCollectionEntryRequest,
 	UpdateCollectionEntryRequest,
 } from "../types/api";
-import useCollectionEntries from "../hooks/useCollectionEntries";
+import useCollectionEntries from "../hooks/useCollectionEntries.tsx";
 import { useAuth } from "./AuthContext";
 
 const PAGE_SIZE = 12;
