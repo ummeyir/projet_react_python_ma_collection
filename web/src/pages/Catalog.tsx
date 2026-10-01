@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import CatalogFilters from "../components/CatalogFilters";
+import CatalogPagination from "../components/CatalogPagination";
 import ItemCard from "../components/ItemCard";
 import { useAuth } from "../contexts/AuthContext";
 import useDebounce from "../hooks/useDebounce";
@@ -67,37 +69,19 @@ function Catalog() {
 					</p>
 				</div>
 
-				<div className="catalog-controls">
-					<label className="search-field">
-						<span>Rechercher</span>
-						<input
-							type="search"
-							value={search}
-							onChange={(event) => {
-								setSearch(event.target.value);
-								setPage(1);
-							}}
-							placeholder="Ex. squat, pectoraux, haltères"
-						/>
-					</label>
-					<label className="category-field">
-						<span>Groupe musculaire</span>
-						<select
-							value={category}
-							onChange={(event) => {
-								setCategory(event.target.value);
-								setPage(1);
-							}}
-						>
-							<option value="">Toutes les catégories</option>
-							{categories.map((categoryName) => (
-								<option key={categoryName} value={categoryName}>
-									{categoryName}
-								</option>
-							))}
-						</select>
-					</label>
-				</div>
+				<CatalogFilters
+					search={search}
+					category={category}
+					categories={categories}
+					onSearchChange={(value) => {
+						setSearch(value);
+						setPage(1);
+					}}
+					onCategoryChange={(value) => {
+						setCategory(value);
+						setPage(1);
+					}}
+				/>
 
 				{loading ? (
 					<p className="catalog-state" role="status">
@@ -123,25 +107,11 @@ function Catalog() {
 				)}
 
 				{!loading && !error && total > PAGE_SIZE && (
-					<nav className="catalog-pagination" aria-label="Pagination du catalogue">
-						<button
-							type="button"
-							disabled={page === 1}
-							onClick={() => setPage((currentPage) => currentPage - 1)}
-						>
-							Précédent
-						</button>
-						<span>
-							Page {page} sur {pageCount}
-						</span>
-						<button
-							type="button"
-							disabled={page === pageCount}
-							onClick={() => setPage((currentPage) => currentPage + 1)}
-						>
-							Suivant
-						</button>
-					</nav>
+					<CatalogPagination
+						page={page}
+						pageCount={pageCount}
+						onPageChange={setPage}
+					/>
 				)}
 			</section>
 		</main>
