@@ -18,20 +18,46 @@ Application web en français pour parcourir des exercices de musculation et gér
 
 ## Prérequis
 
-- Docker Desktop avec Docker Compose.
+- Docker Engine avec Docker Compose, ou Docker Desktop.
 - Node.js 22.13+ et npm.
 
 ## Lancement
 
-Depuis la racine du dépôt, copie `.env.example` vers `.env`, remplace les valeurs par des secrets locaux forts, puis démarre PostgreSQL et l'API :
+Depuis la racine du dépôt, crée le fichier local `.env` à partir du modèle :
+
+```bash
+cp .env.example .env
+```
+
+Sous PowerShell, utilise plutôt :
 
 ```powershell
+Copy-Item .env.example .env
+```
+
+Génère deux valeurs aléatoires distinctes avec cette commande (exécute-la deux fois) :
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+```
+
+Colle la première valeur dans `POSTGRES_PASSWORD` et la seconde dans `SECRET_KEY` dans `.env`. La clé JWT doit faire au moins 32 caractères. Garde ce fichier local : il est ignoré par Git et ne doit pas être partagé.
+
+Démarre ensuite PostgreSQL et l'API depuis la racine :
+
+```bash
 docker compose up --build -d
+```
+
+Sur Linux, si Docker répond `permission denied` pour son socket, relance avec `sudo` :
+
+```bash
+sudo docker compose up --build -d
 ```
 
 Dans un second terminal, démarre le frontend :
 
-```powershell
+```bash
 cd web
 npm ci
 npm run dev
@@ -41,7 +67,7 @@ L'application est disponible sur <http://localhost:5173>. L'API répond sur <htt
 
 Pour arrêter les conteneurs :
 
-```powershell
+```bash
 docker compose down
 ```
 
@@ -49,15 +75,15 @@ Le volume `postgres_data` conserve la base. `docker compose down -v` supprime ce
 
 ## Configuration
 
-Compose lit `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `SECRET_KEY`, `ACCESS_TOKEN_EXPIRE_MINUTES` et `CORS_ORIGINS` depuis `.env` à la racine. Le mot de passe PostgreSQL et la clé secrète sont obligatoires ; ne versionne jamais `.env` ni un secret de production. `CORS_ORIGINS` est une liste d'origines séparées par des virgules.
+Compose lit `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `SECRET_KEY` et `ACCESS_TOKEN_EXPIRE_MINUTES` depuis `.env` à la racine. Le mot de passe PostgreSQL et la clé secrète sont obligatoires ; la clé doit faire au moins 32 caractères. Ne versionne jamais `.env` ni un secret de production.
 
-Le frontend utilise `http://localhost:8000` par défaut. Pour configurer cette valeur explicitement, copie `web/.env.example` vers `web/.env.local`.
+Le backend autorise actuellement l'origine frontend `http://localhost:5173` dans `api/main.py`. Si le frontend utilise une autre origine, adapte cette configuration CORS. Le frontend utilise `http://localhost:8000` par défaut pour l'API. Pour configurer cette valeur explicitement, copie `web/.env.example` vers `web/.env.local`.
 
 ## Vérifications
 
 Build frontend :
 
-```powershell
+```bash
 cd web
 npm run build
 npm test
@@ -65,14 +91,14 @@ npm test
 
 Tests backend, depuis `api/` après installation des dépendances de test :
 
-```powershell
+```bash
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
 Le seed est exécuté automatiquement au démarrage de l'API. Pour le relancer manuellement dans le conteneur :
 
-```powershell
+```bash
 docker compose exec api python seed.py
 ```
 
