@@ -1,16 +1,17 @@
 :root {
   font-family: "Aptos", "Trebuchet MS", sans-serif;
-  color: #1c2823;
-  background: #f2f4ef;
+  color: #edf1f4;
+  background: #090b0d;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --color-ink: #1c2823;
-  --color-muted: #66716b;
-  --color-accent: #b9e86a;
-  --color-line: #d9ded8;
+  color-scheme: dark;
+  --color-ink: #edf1f4;
+  --color-muted: #a6afb7;
+  --color-accent: #d9e0e5;
+  --color-line: rgba(206, 216, 224, 0.2);
 }
 
 * {
@@ -21,6 +22,13 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  background-color: #090b0d;
+  background-image:
+    linear-gradient(135deg, transparent 0 48%, rgba(178, 192, 202, 0.035) 48.1%, transparent 48.35%),
+    linear-gradient(rgba(191, 204, 214, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(191, 204, 214, 0.025) 1px, transparent 1px);
+  background-size: 100% 100%, 44px 44px, 44px 44px;
+  background-attachment: fixed;
 }
 
 button,
@@ -917,4 +925,164 @@ textarea {
     margin-block: 48px;
     padding: 24px;
   }
+}
+
+/* Graphite and brushed-steel finish */
+::selection {
+  background: rgba(220, 229, 235, 0.3);
+  color: #fff;
+}
+
+.page-header {
+  border-color: var(--color-line);
+}
+
+.page-header h1,
+.catalog-count strong {
+  color: #f5f7f8;
+}
+
+.auth-nav-link,
+.auth-nav-button,
+.auth-footer a,
+.item-card-link,
+.detail-action-link {
+  color: #e4e9ed;
+}
+
+.auth-nav-link:hover,
+.auth-nav-button:hover,
+.item-card-link:hover,
+.detail-action-link:hover,
+.detail-back-link:hover {
+  color: #fff;
+}
+
+.auth-nav-primary,
+.auth-panel,
+.catalog-controls,
+.item-card,
+.detail-not-found,
+.catalog-state,
+.catalog-error,
+.collection-filters,
+.collection-entry {
+  border-color: var(--color-line);
+  background: linear-gradient(145deg, rgba(31, 36, 41, 0.86), rgba(15, 18, 21, 0.82));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.auth-panel,
+.catalog-controls,
+.item-card,
+.collection-entry {
+  box-shadow: inset 0 1px rgba(245, 249, 252, 0.055), 0 16px 38px rgba(0, 0, 0, 0.16);
+}
+
+.auth-field input,
+.catalog-controls input,
+.catalog-controls select,
+.collection-filters select,
+.collection-entry-form select,
+.collection-entry-form textarea {
+  border-color: rgba(196, 207, 216, 0.24);
+  background: rgba(5, 7, 9, 0.62);
+  color: #f0f3f5;
+}
+
+.auth-field input::placeholder,
+.catalog-controls input::placeholder,
+.collection-entry-form textarea::placeholder {
+  color: #89939c;
+}
+
+.auth-field input:focus-visible,
+.catalog-controls input:focus-visible,
+.catalog-controls select:focus-visible,
+.auth-nav-link:focus-visible,
+.auth-nav-button:focus-visible,
+.item-card-link:focus-visible,
+.detail-action-link:focus-visible,
+.detail-back-link:focus-visible,
+.brand-link:focus-visible {
+  outline-color: #e1e8ed;
+}
+
+.auth-submit {
+  border-color: #e2e8ec;
+  background: #dbe2e7;
+  color: #111518;
+}
+
+.auth-submit:hover {
+  background: #f3f6f8;
+}
+
+.section-index,
+.exercise-detail-figure figcaption {
+  border: 1px solid rgba(236, 242, 246, 0.26);
+  background: linear-gradient(135deg, rgba(213, 222, 228, 0.2), rgba(122, 135, 145, 0.12));
+  color: #f1f4f6;
+}
+
+.item-card-image,
+.exercise-detail-figure img {
+  background: #171b1f;
+  filter: grayscale(1) contrast(1.08);
+}
+
+.item-card-image-placeholder,
+.exercise-detail-image-placeholder {
+  background: linear-gradient(145deg, #252b30, #111518);
+  color: #d6dde2;
+}
+
+.item-card-category,
+.item-card-link span,
+.detail-action-link span {
+  color: #d5dde2;
+}
+
+.item-card-details,
+.item-card-link {
+  border-color: var(--color-line);
+}
+
+.detail-action-link {
+  border-color: var(--color-line);
+  background: rgba(20, 24, 28, 0.74);
+}
+
+.catalog-pagination button {
+  border-color: var(--color-line);
+  background: rgba(27, 32, 36, 0.86);
+  color: #edf1f4;
+}
+
+.catalog-pagination button:not(:disabled):hover {
+  border-color: rgba(230, 237, 241, 0.62);
+  background: rgba(55, 63, 70, 0.9);
+}
+
+.empty-state,
+.collection-empty-state {
+  border-color: rgba(196, 207, 216, 0.35);
+  color: var(--color-muted);
+}
+
+.collection-remove-button {
+  color: #f0a59b;
+}
+
+.auth-error {
+  border-color: #e17a6c;
+  background: rgba(104, 39, 32, 0.42);
+  color: #ffd1ca;
+}
+
+.auth-success,
+.stats-summary,
+.stats-status-row {
+  border-color: var(--color-line);
 }
