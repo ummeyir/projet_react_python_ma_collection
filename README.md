@@ -1,7 +1,5 @@
 # Ma Collection
 
-# Ma Collection
-
 Application web en français pour parcourir des exercices de musculation et gérer une collection personnelle. Le backend expose une API REST en anglais ; l'interface présente les contenus et les actions en français.
 
 ## Fonctionnalités
@@ -21,11 +19,11 @@ Application web en français pour parcourir des exercices de musculation et gér
 ## Prérequis
 
 - Docker Desktop avec Docker Compose.
-- Node.js 20.19+ ou 22.12+, et npm.
+- Node.js 22.13+ et npm.
 
 ## Lancement
 
-Depuis la racine du dépôt, crée `.env` à partir de `.env.example`, remplace les valeurs de mot de passe et génère une clé avec `python3 -c "import secrets; print(secrets.token_hex(32))"`. Puis démarre PostgreSQL et l'API :
+Depuis la racine du dépôt, copie `.env.example` vers `.env`, remplace les valeurs par des secrets locaux forts, puis démarre PostgreSQL et l'API :
 
 ```powershell
 docker compose up --build -d
@@ -53,7 +51,7 @@ Le volume `postgres_data` conserve la base. `docker compose down -v` supprime ce
 
 Compose lit `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `SECRET_KEY`, `ACCESS_TOKEN_EXPIRE_MINUTES` et `CORS_ORIGINS` depuis `.env` à la racine. Le mot de passe PostgreSQL et la clé secrète sont obligatoires ; ne versionne jamais `.env` ni un secret de production. `CORS_ORIGINS` est une liste d'origines séparées par des virgules.
 
-Le frontend utilise `http://localhost:8000` par défaut. Pour changer cette adresse, définis `VITE_API_BASE_URL` dans `web/.env.local`.
+Le frontend utilise `http://localhost:8000` par défaut. Pour configurer cette valeur explicitement, copie `web/.env.example` vers `web/.env.local`.
 
 ## Vérifications
 
@@ -70,6 +68,12 @@ Tests backend, depuis `api/` après installation des dépendances de test :
 ```powershell
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
+```
+
+Le seed est exécuté automatiquement au démarrage de l'API. Pour le relancer manuellement dans le conteneur :
+
+```powershell
+docker compose exec api python seed.py
 ```
 
 ## Sécurité
