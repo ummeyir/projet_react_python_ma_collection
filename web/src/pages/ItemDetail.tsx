@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import ExerciseDetailContent from "../components/ExerciseDetailContent";
 import { ApiError, addCollectionEntry, getItem } from "../services/apiClient";
 import { useAuth } from "../contexts/AuthContext";
@@ -8,6 +8,11 @@ import type { Item } from "../types/api";
 function ItemDetail() {
 	const { isAuthenticated, token } = useAuth();
 	const { itemId } = useParams();
+	const location = useLocation();
+	const returnTo =
+		typeof location.state?.from === "string" ? location.state.from : "/";
+	const returnScrollY =
+		typeof location.state?.scrollY === "number" ? location.state.scrollY : null;
 	const [item, setItem] = useState<Item | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -100,7 +105,7 @@ function ItemDetail() {
 					>
 						Réessayer
 					</button>
-					<Link className="detail-action-link" to="/">
+					<Link className="detail-action-link" to={returnTo}>
 						Retour au catalogue <span aria-hidden="true">→</span>
 					</Link>
 				</section>
@@ -112,6 +117,8 @@ function ItemDetail() {
 					isAdded={addedItemId === item.id}
 					actionError={actionError}
 					onAdd={() => addToCollection(item)}
+					returnTo={returnTo}
+					returnScrollY={returnScrollY}
 				/>
 			) : null}
 		</main>

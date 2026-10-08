@@ -8,6 +8,8 @@ interface ExerciseDetailContentProps {
 	isAdded: boolean;
 	actionError: string | null;
 	onAdd: () => void;
+	returnTo: string;
+	returnScrollY: number | null;
 }
 
 function ExerciseDetailContent({
@@ -17,10 +19,16 @@ function ExerciseDetailContent({
 	isAdded,
 	actionError,
 	onAdd,
+	returnTo,
+	returnScrollY,
 }: ExerciseDetailContentProps) {
 	return (
 		<article className="exercise-detail">
-			<Link className="detail-back-link" to="/">
+			<Link
+				className="detail-back-link"
+				to={returnTo}
+				state={returnScrollY === null ? undefined : { scrollY: returnScrollY }}
+			>
 				<span aria-hidden="true">←</span> Retour au catalogue
 			</Link>
 			<div className="exercise-detail-layout">

@@ -1,15 +1,25 @@
 import type { Item } from "../types/api";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface ItemCardProps {
 	item: Item;
+	returnTo: string;
 }
 
-function ItemCard({ item }: ItemCardProps) {
+function ItemCard({ item, returnTo }: ItemCardProps) {
+	const navigate = useNavigate();
+
 	return (
 		<Link
 			className="item-card"
 			to={`/items/${item.id}`}
+			state={{ from: returnTo }}
+			onClick={(event) => {
+				event.preventDefault();
+				navigate(`/items/${item.id}`, {
+					state: { from: returnTo, scrollY: window.scrollY },
+				});
+			}}
 			aria-label={`Voir la fiche de ${item.name}`}
 		>
 			{item.image_url ? (

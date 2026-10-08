@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import CatalogFilters from "../components/CatalogFilters";
 import CatalogPagination from "../components/CatalogPagination";
 import ItemCard from "../components/ItemCard";
@@ -11,9 +11,15 @@ const PAGE_SIZE = 12;
 
 function Catalog() {
 	const { isAuthenticated, user, logout } = useAuth();
+	const location = useLocation();
+	const [searchParams] = useSearchParams();
+	const restoredLocationKey = useRef<string | null>(null);
 	const [search, setSearch] = useState("");
 	const [category, setCategory] = useState("");
-	const [page, setPage] = useState(1);
+	const [page, setPage] = useState(() => {
+		const parsedPage = Number(searchParams.get("page"));
+		return Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+	});
 	const debouncedSearch = useDebounce(search);
 	const { items, categories, total, loading, error, retry } = useCatalogItems(
 		debouncedSearch,
@@ -22,6 +28,32 @@ function Catalog() {
 		PAGE_SIZE,
 	);
 	const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+	const returnTo = `/?page=${page}`;
+
+	function changePage(nextPage: number): void {
+		window.scrollTo({ top: 0, behavior: "auto" });
+		setPage(nextPage);
+	}
+
+	useEffect(() => {
+		const scrollY = location.state?.scrollY;
+		if (
+			typeof scrollY !== "number" ||
+			loading ||
+			restoredLocationKey.current === location.key
+		) {
+			return;
+		}
+
+		restoredLocationKey.current = location.key;
+		let frame = window.requestAnimationFrame(() => {
+			frame = window.requestAnimationFrame(() => {
+				window.scrollTo({ top: scrollY, behavior: "auto" });
+			});
+		});
+
+		return () => window.cancelAnimationFrame(frame);
+	}, [items.length, loading, location.key, location.state]);
 
 	return (
 		<main className="app-shell">
@@ -97,7 +129,7 @@ function Catalog() {
 				) : items.length > 0 ? (
 					<div className="exercise-grid">
 						{items.map((item) => (
-							<ItemCard key={item.id} item={item} />
+							<ItemCard key={item.id} item={item} returnTo={returnTo} />
 						))}
 					</div>
 				) : (
@@ -110,7 +142,7 @@ function Catalog() {
 					<CatalogPagination
 						page={page}
 						pageCount={pageCount}
-						onPageChange={setPage}
+						onPageChange={changePage}
 					/>
 				)}
 			</section>
