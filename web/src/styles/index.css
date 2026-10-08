@@ -345,8 +345,9 @@ textarea {
 .item-card-image {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 4 / 5;
   object-fit: cover;
+  object-position: center;
   background: #dfe5db;
 }
 
@@ -481,6 +482,7 @@ textarea {
   width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
+  object-position: center;
   background: #dfe5db;
 }
 
@@ -1038,7 +1040,6 @@ textarea {
 .item-card-image,
 .exercise-detail-figure img {
   background: #171b1f;
-  filter: grayscale(1) contrast(1.08);
 }
 
 .item-card-image-placeholder,
