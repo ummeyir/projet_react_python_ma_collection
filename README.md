@@ -19,7 +19,6 @@ Application web en français pour parcourir des exercices de musculation et gér
 ## Prérequis
 
 - Docker Engine avec Docker Compose, ou Docker Desktop.
-- Node.js 22.13+ et npm.
 
 ## Lancement
 
@@ -43,7 +42,7 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
 Colle la première valeur dans `POSTGRES_PASSWORD` et la seconde dans `SECRET_KEY` dans `.env`. La clé JWT doit faire au moins 32 caractères. Garde ce fichier local : il est ignoré par Git et ne doit pas être partagé.
 
-Démarre ensuite PostgreSQL et l'API depuis la racine :
+Démarre ensuite tous les services depuis la racine :
 
 ```bash
 docker compose up --build -d
@@ -55,31 +54,7 @@ Sur Linux, si Docker répond `permission denied` pour son socket, relance avec `
 sudo docker compose up --build -d
 ```
 
-Dans un second terminal, démarre le frontend :
-
-```bash
-cd web
-npm ci
-npm run dev
-```
-
 L'application est disponible sur <http://localhost:5173>. L'API répond sur <http://localhost:8000>, avec la documentation interactive sur <http://localhost:8000/docs>. Les 40 exercices initiaux sont insérés au démarrage de l'API.
-
-### Lancement en une commande
-
-Sous Windows PowerShell, depuis la racine du projet :
-
-```powershell
-.\start.ps1
-```
-
-Sous Linux ou macOS :
-
-```bash
-./start.sh
-```
-
-Ces scripts démarrent PostgreSQL et l'API avec Docker, puis le serveur de développement frontend. Pour arrêter les services, interrompez le script avec `Ctrl+C`.
 
 Pour arrêter les conteneurs :
 
