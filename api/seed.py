@@ -42,7 +42,7 @@ EXERCISES = [
     {"id": 34, "category": "Cardio", "name": "Rameur", "muscle_group": "Cardio", "equipment": "Machine", "difficulty": "Débutant", "description": "Exercice cardio complet et intense.", "image_url": "/images/exercises/cardio/rameur.jpg"},
     {"id": 35, "category": "Cardio", "name": "Tapis de course", "muscle_group": "Cardio", "equipment": "Tapis", "difficulty": "Débutant", "description": "Cardio accessible et efficace.", "image_url": "/images/exercises/cardio/tapis_course.gif"},
     {"id": 36, "category": "Cardio", "name": "Burpees", "muscle_group": "Cardio", "equipment": "Poids du corps", "difficulty": "Intermédiaire", "description": "Exercice complet pour la résistance et le cardio.", "image_url": "/images/exercises/cardio/burpees.jpg"},
-    {"id": 37, "category": "Full body", "name": "Kettlebell swing", "muscle_group": "Full body", "equipment": "Kettlebell", "difficulty": "Intermédiaire", "description": "Travaille les jambes, les fessiers et le dos.", "image_url": "/images/exercises/cardio/kettlebell.webp"},
+    {"id": 37, "category": "Full body", "name": "Kettlebell swing", "muscle_group": "Full body", "equipment": "Kettlebell", "difficulty": "Intermédiaire", "description": "Travaille les jambes, les fessiers et le dos.", "image_url": "/images/exercises/cardio/kettlebell3.jpg"},
     {"id": 38, "category": "Jambes", "name": "Box squat", "muscle_group": "Jambes", "equipment": "Barre", "difficulty": "Intermédiaire", "description": "Variation du squat avec contrôle de la profondeur.", "image_url": "/images/exercises/jambe/box_squat.jpg"},
 
 ]
