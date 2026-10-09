@@ -65,6 +65,22 @@ npm run dev
 
 L'application est disponible sur <http://localhost:5173>. L'API répond sur <http://localhost:8000>, avec la documentation interactive sur <http://localhost:8000/docs>. Les 40 exercices initiaux sont insérés au démarrage de l'API.
 
+### Lancement en une commande
+
+Sous Windows PowerShell, depuis la racine du projet :
+
+```powershell
+.\start.ps1
+```
+
+Sous Linux ou macOS :
+
+```bash
+./start.sh
+```
+
+Ces scripts démarrent PostgreSQL et l'API avec Docker, puis le serveur de développement frontend. Pour arrêter les services, interrompez le script avec `Ctrl+C`.
+
 Pour arrêter les conteneurs :
 
 ```bash
